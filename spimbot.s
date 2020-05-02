@@ -73,7 +73,13 @@ solve_puzzle:
     la $t0, solution
     sw $t0, SUBMIT_SOLUTION
     sw $zero, has_puzzle($zero)
+    lw $t2, ANGLE($0)
 
+spin_scan:
+    sw $zero, ANGLE_CONTROL($zero)
+    li $t0, 1
+    sw $t0, ANGLE($zero)
+    sw $zero, VELOCITY($zero)
 scan1:
     la $t0, scanner_wb
     sw $t0, USE_SCANNER
@@ -81,6 +87,9 @@ scan1:
     beq $t1, 24, shoot_once # enemy_bot
     beq $t1, 10, shoot_twice # enemy_host
     beq $t1, 2, shoot_once  # netural_host & friendly_host
+    lw $t1, ANGLE($0)
+    beq $t1, $t2, movement
+    j spin_scan
 
 movement:
     sw $zero, ANGLE_CONTROL($zero)
@@ -173,12 +182,13 @@ bonk_interrupt:
     sw      $0, BONK_ACK
     #Fill in your bonk handler code here
 
-    lw      $t1, ANGLE($0)
-    add     $t1, $t1, 33
+    #lw      $t1, ANGLE($0)
+    #add     $t1, $t1, 33
 
     li      $t0, 0     # t0 = 0
     sw      $t0, ANGLE_CONTROL($0)
 
+    li      $t1, 33
     sw      $t1, ANGLE($0)
     li      $t1, 10
     sw      $t1, VELOCITY($zero)
