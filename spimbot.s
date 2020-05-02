@@ -174,7 +174,7 @@ bonk_interrupt:
     #Fill in your bonk handler code here
 
     lw      $t1, ANGLE($0)
-    add     $t1, $t1, 31
+    add     $t1, $t1, 33
 
     li      $t0, 0     # t0 = 0
     sw      $t0, ANGLE_CONTROL($0)
