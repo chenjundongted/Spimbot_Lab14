@@ -56,6 +56,8 @@ main:
     or      $t4, $t4, 1 # global enable
     mtc0    $t4, $12
 
+    li $t3, 10 # Velocity Constant
+
 ask_puzzle:
     la $t0, puzzle
     sw $t0, REQUEST_PUZZLE
@@ -85,36 +87,32 @@ scan1:
     la $t0, scanner_wb
     sw $t0, USE_SCANNER
     lb $t1, 2($t0)
+    beq $t1, 0, scan1_continue    # ground
+    beq $t1, 1, scan1_continue    # wall
     beq $t1, 24, shoot_once # enemy_bot
     beq $t1, 10, shoot_twice # enemy_host
     beq $t1, 2, shoot_once  # netural_host & friendly_host
+
+scan1_continue:
     lw $t1, ANGLE($0)
     beq $t1, $t2, movement
     j spin_scan
 
 movement:
     sw $zero, ANGLE_CONTROL($zero)
-    li $t0, 131
+    li $t0, 133
     sw $t0, ANGLE($zero)
-    li $t1, 10
-    sw $t1, VELOCITY($zero)
-
-scan2:
-    la $t0, scanner_wb
-    sw $t0, USE_SCANNER
-    lb $t1, 2($t0)
-    beq $t1, 24, shoot_once # enemy_bot
-    beq $t1, 10, shoot_twice # enemy_host
-    beq $t1, 2, shoot_once  # netural_host & friendly_host
-    j ask_puzzle
+    sw $t3, VELOCITY($zero)
 
 shoot_once:
     sw $zero, SHOOT_UDP_PACKET($zero)
     j ask_puzzle
 
 shoot_twice:
+    sw $zero, VELOCITY($zero)
     sw $zero, SHOOT_UDP_PACKET($zero)
     sw $zero, SHOOT_UDP_PACKET($zero)
+    sw $t3, VELOCITY($zero)
     j ask_puzzle
 
 other:
@@ -817,3 +815,18 @@ solver_board_done:
         # @RETURN 1
         li      $v0, 1
     jr      $ra
+
+
+.globl euc_dist
+euc_dist:
+    sub         $a0, $a2, $a0   # $a0 = (x2 - x1)
+    mul         $a0, $a0, $a0   # $a0 = (x2 - x1)^2
+    sub         $a1, $a3, $a1   # $a1 = (y2 - y1)
+    mul         $a1, $a1, $a1   # $a1 = (y2 - y1)^2
+    add         $v0, $a0, $a1   # $v0 = (x2 - x1)^2 + (y2 - y1)^2
+    mtc1        $v0, $f12       # $f12 = $v0
+    cvt.s.w     $f12, $f12      # cast $f12 to a float
+    sqrt.s      $f12, $f12      # $f12 = sqrt($f12)
+    cvt.w.s     $f12, $f12      # cast $f12 to an int
+    mfc1        $v0, $f12       # $v0 = $f12
+    jr          $ra
