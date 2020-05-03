@@ -80,6 +80,7 @@ spin_scan:
     li $t0, 1
     sw $t0, ANGLE($zero)
     sw $zero, VELOCITY($zero)
+
 scan1:
     la $t0, scanner_wb
     sw $t0, USE_SCANNER
@@ -114,7 +115,6 @@ shoot_once:
 shoot_twice:
     sw $zero, SHOOT_UDP_PACKET($zero)
     sw $zero, SHOOT_UDP_PACKET($zero)
-
     j ask_puzzle
 
 other:
