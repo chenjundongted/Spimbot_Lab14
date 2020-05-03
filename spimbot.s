@@ -74,10 +74,11 @@ solve_puzzle:
     sw $t0, SUBMIT_SOLUTION
     sw $zero, has_puzzle($zero)
     lw $t2, ANGLE($0)
+    add $t3, $t2, 1
 
 spin_scan:
     sw $zero, ANGLE_CONTROL($zero)
-    li $t0, 1
+    li $t0, 2
     sw $t0, ANGLE($zero)
     sw $zero, VELOCITY($zero)
 
@@ -90,6 +91,7 @@ scan1:
     beq $t1, 2, shoot_once  # netural_host & friendly_host
     lw $t1, ANGLE($0)
     beq $t1, $t2, movement
+    beq $t1, $t3, movement
     j spin_scan
 
 movement:
