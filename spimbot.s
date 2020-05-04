@@ -57,8 +57,10 @@ main:
     mtc0    $t4, $12
 
     li $t3, 10 # Velocity Constant
+    li $t5, 0 #not spinning
 
 ask_puzzle:
+    li $t7, 0 #movement counts
     la $t0, puzzle
     sw $t0, REQUEST_PUZZLE
 
@@ -75,13 +77,17 @@ solve_puzzle:
     la $t0, solution
     sw $t0, SUBMIT_SOLUTION
     sw $zero, has_puzzle($zero)
+    li $t6, 1
+    beq $t5, $t6, spin_scan #spinning
     lw $t2, ANGLE($0)
 
 spin_scan:
+    li $t5, 1 #spinning
     sw $zero, ANGLE_CONTROL($zero)
-    li $t0, 1
+    li $t0, 2
     sw $t0, ANGLE($zero)
-    sw $zero, VELOCITY($zero)
+    li $t1, 10
+    sw $t1, VELOCITY($zero)
 
 scan1:
     la $t0, scanner_wb
@@ -95,14 +101,24 @@ scan1:
 
 scan1_continue:
     lw $t1, ANGLE($0)
+    add $t6, $t2, 45 #points feeding 1
+    beq $t1, $t6, ask_puzzle
+
     beq $t1, $t2, movement
+    add $t6, $t2, 1
+    beq $t1, $t6, movement
     j spin_scan
 
 movement:
-    sw $zero, ANGLE_CONTROL($zero)
-    li $t0, 133
-    sw $t0, ANGLE($zero)
+    li $t5, 0 #not spinning
+    #sw $zero, ANGLE_CONTROL($zero)
+    #li $t0, 133
+    #sw $t0, ANGLE($zero)
     sw $t3, VELOCITY($zero)
+    li $t6, 100
+    beq $t6, $t7, ask_puzzle
+    add $t7, $t7, 1
+    j movement
 
 shoot_once:
     sw $zero, SHOOT_UDP_PACKET($zero)
@@ -180,11 +196,7 @@ bonk_interrupt:
     sw      $0, BONK_ACK
     #Fill in your bonk handler code here
 
-    #lw      $t1, ANGLE($0)
-    #add     $t1, $t1, 33
-
-    li      $t0, 0     # t0 = 0
-    sw      $t0, ANGLE_CONTROL($0)
+    sw      $zero, ANGLE_CONTROL($0)
 
     li      $t1, 33
     sw      $t1, ANGLE($0)
